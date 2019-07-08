@@ -24,11 +24,28 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-
 app.use('/', index);
 app.use('/erase', eraseEvents);
 app.use('/events', events);
 app.use('/actors', actor);
+
+app.use('/createDB', function(req, res){
+  var EventModel = require('./model/event_model')
+  var ActorModel = require('./model/actor_model')
+  var RepoModel = require('./model/repo_model')
+  var AppDAO = require('./model/dao')
+
+  var dao = new AppDAO()
+  var eventsRepo = new EventModel(dao)
+  var actorsRepo = new ActorModel(dao)
+  var repoModel = new RepoModel(dao)
+
+  eventsRepo.createTable()  
+  actorsRepo.createTable()  
+  repoModel.createTable()
+
+  res.send("Database created")
+})
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
