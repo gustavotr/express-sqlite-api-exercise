@@ -37,8 +37,8 @@ class ActorModel{
 
     getAllActors(){
         return this.dao.all(
-            `SELECT A.*, COUNT(E.actor_id) as total_events FROM actors A INNER JOIN events E ON A.id = E.actor_id
-                GROUP BY E.actor_id ORDER BY total_events DESC, E.created_at DESC, login ASC`
+            `SELECT A.* FROM actors A INNER JOIN events E ON A.id = E.actor_id
+                GROUP BY E.actor_id ORDER BY COUNT(E.actor_id) DESC, E.created_at DESC, A.login ASC`
         )
     }
 
@@ -51,8 +51,14 @@ class ActorModel{
 
     getStreak(){
         return this.dao.all(
-            `SELECT A.* FROM actors A INNER JOIN events E ON A.id = E.actor_id
-                GROUP BY E.actor_id ORDER BY COUNT(E.actor_id) DESC, E.created_at DESC, login ASC`
+            `SELECT A.id, A.login, A.avatar_url FROM actors A INNER JOIN events E ON A.id = E.actor_id
+                GROUP BY E.actor_id ORDER BY COUNT(E.actor_id) DESC, E.created_at DESC, A.login ASC`
+        )
+    }
+
+    getEventsForStreak(){
+        return this.dao.all(
+            `SELECT * FROM events ORDER BY actor_id, created_at`               
         )
     }
 }

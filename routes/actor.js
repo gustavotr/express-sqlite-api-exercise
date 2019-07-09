@@ -11,13 +11,13 @@ router.put('/', function(req, res) {
 })
 
 router.get('/', function(req, res){
-    cActors.getAllActors().then( data => {
+    cActors.getAllActors().then( data => {        
         res.json(data)
     })
 })
 
 router.get('/streak', function(req, res){
-    cActors.getStreak().then( data => {
+    cActors.getStreak().then( data => {               
         res.json(data)
     })
 })
