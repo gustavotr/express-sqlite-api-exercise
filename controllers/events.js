@@ -13,15 +13,15 @@ var getAllEvents = () => {
 
 var addEvent = (body) => {	
 	return eventsRepo.create(body.id, body.type, body.actor.id, body.repo.id).then( data => {
-		actorRepo.create(body.actor.id, body.actor.login, body.actor.avatar_url).catch(console.log)
-		repoRepo.create(body.repo.id, body.repo.name, body.repo.url).catch(console.log)
+		actorRepo.create(body.actor.id, body.actor.login, body.actor.avatar_url).catch( () => {})
+		repoRepo.create(body.repo.id, body.repo.name, body.repo.url).catch( () => {})
 		return data
 	})
 };
 
 
 var getByActor = (id) => {
-	
+	return eventsRepo.getById(id)	
 };
 
 

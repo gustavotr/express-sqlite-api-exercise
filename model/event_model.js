@@ -10,7 +10,7 @@ class EventModel{
                 type TEXT,
                 actor_id INTEGER,
                 repo_id INTEGER,
-                create_at TEXT DEFAULT (datetime('now','utc')),
+                created_at TEXT DEFAULT (datetime('now','utc')),
                 CONSTRAINT event_fk_actor_id FOREIGN KEY (actor_id)
                     REFERENCES actors(id) ON UPDATE CASCADE ON DELETE CASCADE,
                 CONSTRAINT event_fk_repo_id FOREIGN KEY (repo_id)
@@ -42,7 +42,7 @@ class EventModel{
     }
 
     getAll() {
-        return this.dao.all(`SELECT * FROM events`)
+        return this.dao.all(`SELECT * FROM events ORDER BY id ASC`)
     }
 }
 

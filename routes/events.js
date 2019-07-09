@@ -7,8 +7,15 @@ router.get('/', function(req, res, next) {
   cEvents.getAllEvents().then(data =>{    
     res.send(data)
   })
-    
 });
+
+router.get('/actors/:actorID', function(req, res, next) { 
+  var actorID = req.params.actorID   
+  cEvents.getByActor(actorID).then(data =>{    
+    res.send(data)
+  })
+});
+
 
 router.post('/', function(req, res){
   var body = req.body;
@@ -18,16 +25,6 @@ router.post('/', function(req, res){
   }).catch( ()=> {
     res.status(400).end()
   })
-  
 })
-
-router.delete('/', function(req, res){
-  cEvents.eraseEvents().then( () => {
-    res.status(200).end()
-  })
-})
-    
-    
-
 
 module.exports = router;

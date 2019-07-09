@@ -22,10 +22,30 @@ class ActorModel{
         )
     }
 
+    getById(id) {
+        return this.dao.get(
+            `SELECT * FROM actors WHERE id = ?`,
+            [id]
+        )
+    }
+
+    getAllActors(){
+        return this.dao.get(
+            `SELECT A.*, COUNT(E.actor_id) as total_events FROM actors A INNER JOIN events E ON A.id = E.actor_id
+                GROUP BY E.actor_id ORDER BY total_events DESC, E.created_at DESC, login ASC`
+        )
+    }
+
     updateAvatarUrl(id, avatar_url){
         return this.dao.run(
             `UPDATE actors SET avatar_url = ? WHERE id = ?`,
             [id, avatar_url]
+        )
+    }
+
+    getStreak(){
+        return this.dao.run(
+            ``
         )
     }
 }
