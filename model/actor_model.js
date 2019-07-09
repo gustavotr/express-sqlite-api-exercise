@@ -22,6 +22,12 @@ class ActorModel{
         )
     }
 
+    deleteAll(){
+        return this.dao.run(
+            `DELETE FROM actors WHERE 1`
+        )
+    }
+
     getById(id) {
         return this.dao.get(
             `SELECT * FROM actors WHERE id = ?`,
@@ -30,7 +36,7 @@ class ActorModel{
     }
 
     getAllActors(){
-        return this.dao.get(
+        return this.dao.all(
             `SELECT A.*, COUNT(E.actor_id) as total_events FROM actors A INNER JOIN events E ON A.id = E.actor_id
                 GROUP BY E.actor_id ORDER BY total_events DESC, E.created_at DESC, login ASC`
         )
@@ -44,8 +50,9 @@ class ActorModel{
     }
 
     getStreak(){
-        return this.dao.run(
-            ``
+        return this.dao.all(
+            `SELECT A.* FROM actors A INNER JOIN events E ON A.id = E.actor_id
+                GROUP BY E.actor_id ORDER BY COUNT(E.actor_id) DESC, E.created_at DESC, login ASC`
         )
     }
 }

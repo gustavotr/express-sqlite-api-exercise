@@ -20,24 +20,24 @@ class EventModel{
         return this.dao.run(sql);
     }
 
-    create(id, type, actor_id, repo_id){
+    create(id, type, actor_id, repo_id, created_at){
         return this.dao.run(
-            `INSERT INTO events (id, type, actor_id, repo_id)
-                VALUES (?, ?, ?, ?)`,
-                [id, type, actor_id, repo_id]
+            `INSERT INTO events (id, type, actor_id, repo_id, created_at)
+                VALUES (?, ?, ?, ?, ?)`,
+                [id, type, actor_id, repo_id, created_at]
         )
     }
 
     deleteAll(){
         return this.dao.run(
-            `DELETE FROM events WHERE 1`
+            `DELETE FROM events`
         )
     }
 
-    getById(id) {
-        return this.dao.get(
-            `SELECT * FROM events WHERE id = ?`,
-            [id]
+    getById(actor_id) {
+        return this.dao.all(
+            `SELECT * FROM events WHERE actor_id = ?`,
+            [actor_id]
         )
     }
 

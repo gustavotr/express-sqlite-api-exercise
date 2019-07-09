@@ -5,8 +5,9 @@
   "scripts": {
     "prestart": "npm install",
     "start": "node ./bin/www",
+    "dev_start": "nodemon ./bin/www",
     "pretest": "npm install",
-    "test": "./node_modules/.bin/mocha test"
+    "test": "./node_modules/.bin/mocha --bail test"
   },
   "dependencies": {
     "body-parser": "~1.17.1",

@@ -21,6 +21,19 @@ class RepoModel{
                 [id, name, url]
         )
     }
+
+    getById(id) {
+        return this.dao.all(
+            `SELECT * FROM repo WHERE id = ?`,
+            [id]
+        )
+    }
+
+    deleteAll(){
+        return this.dao.run(
+            `DELETE FROM repo WHERE 1`
+        )
+    }
 }
 
 module.exports = RepoModel

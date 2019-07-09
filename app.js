@@ -29,7 +29,7 @@ app.use('/erase', eraseEvents);
 app.use('/events', events);
 app.use('/actors', actor);
 
-app.use('/createDB', function(req, res){
+app.use(function(req, res, next){
   var EventModel = require('./model/event_model')
   var ActorModel = require('./model/actor_model')
   var RepoModel = require('./model/repo_model')
@@ -43,8 +43,7 @@ app.use('/createDB', function(req, res){
   eventsRepo.createTable()  
   actorsRepo.createTable()  
   repoModel.createTable()
-
-  res.send("Database created")
+  next()
 })
 
 // catch 404 and forward to error handler
