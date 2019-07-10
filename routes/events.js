@@ -36,7 +36,7 @@ router.get('/', function(req, res, next) {
       })    
     }
     return promise;
-  }).then( data => {
+  }).then( data => {    
     res.json(data);    
   })
 });
@@ -47,28 +47,36 @@ router.get('/actors/:actorID', function(req, res, next) {
     return events 
   })
   .then( (events) => {
-    new Promise( (resolve) => {
-      var evts = []
-      for(const i in events)  {
-        var event = events[i]
-        cActors.getById(event.actor_id)
-          .then( data => {
-            event.actor = data
-            delete(event.actor_id)  
-            return cRepos.getById(event.repo_id)
-          })
-          .then( data => {
-            event.repo = data[0]
-            delete(event.repo_id)
-            evts.push(event)
-            if(i == data.length -1)
-              resolve(evts)
-          })  
-      }
-    }).then( data => {         
-      res.json(data)
-    })
-  })
+    var promise;
+    if(events.length == 0){
+      promise = new Promise( (resolve) => {
+        resolve(events);
+      });
+    }else{
+      promise = new Promise( (resolve) => {
+        var evts = []
+        for(const i in events){
+          var event = events[i];
+          cActors.getById(event.actor_id)
+            .then( data => {
+              event.actor = data
+              delete(event.actor_id)  
+              return cRepos.getById(event.repo_id)
+            })
+            .then( data => {
+              event.repo = data[0]
+              delete(event.repo_id)
+              evts.push(event)
+              if(i == data.length -1)
+                resolve(evts)
+            });  
+        }
+      });   
+    }
+    return promise;
+  }).then( data => {            
+    res.json(data)
+  })  
 });
 
 

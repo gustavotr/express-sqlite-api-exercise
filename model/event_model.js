@@ -36,7 +36,7 @@ class EventModel{
 
     getById(actor_id) {
         return this.dao.all(
-            `SELECT * FROM events WHERE actor_id = ?`,
+            `SELECT * FROM events WHERE actor_id = ? ORDER BY id ASC`,
             [actor_id]
         )
     }
