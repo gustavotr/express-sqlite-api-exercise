@@ -1,10 +1,12 @@
 const ActorModel = require('../models/actor_model');
+const EventModel = require('../models/event_model');
 const DAO = require('../models/dao');
+const moment = require('moment');
 
 var getAllActorsOrderedByEvents = () => {
 	const dao = new DAO();
 	const actorModel = new ActorModel(dao);
-	return actorModel.getAllActors()
+	return actorModel.allOrderedByEvents()
 };
 
 var getById = (id) => {
@@ -32,42 +34,63 @@ var updateActor = (actor) => {
 	return p;
 };
 
-var getStreak = () => {
+const getStreak = () => {
 	const dao = new DAO();
 	const actorModel = new ActorModel(dao);
-	var promise = new Promise( (resolve) => {
-		actorModel.getEventsForStreak()
-			.then((data)=>{
-				var actors = []
-				var counter = 1;
-				var e = data[0];
-				for(var i = 1; i < data.length; i++){
-					var event = data[i];
-					if(event.actor_id == e.actor_id){
-						var eventDate = new Date(event.created_at);
-						eventDate.setHours(0,0,0,0);
-						var dateBefore = new Date(e.created_at);
-						dateBefore.setHours(0,0,0,0);
-						if(eventDate - dateBefore > 1){
-							console.log("Streak break: ", eventDate - dateBefore)
-						}					
-						counter++;
-					}else{
-						actors.push({actor_id: e.actor_id, streak: counter});
-						e = event;
-						counter = 1;
-					}
-				}
-				return actors;
-			})
-			.then( (actors)=>{
-				// console.log("Actors: ", actors)
-				resolve(actors)
-			})	
-	});
+	const eventModel = new EventModel(dao);
+	const temp_dao = new DAO(':memory:');
+    const temp_actorModel = new ActorModel(temp_dao);
 
-	// return promise;
-	return actorModel.getStreak();
+	const calcStreak = (actor) =>{
+		return new Promise((resolve, reject) => {
+			eventModel.getAllByActorId(actor.id, true)
+				.then(events => {
+					let streak = 0;
+					let maxStreak = 0;
+					let lastEvent = null;
+					for(const i in events){
+						if(lastEvent == null || moment(lastEvent).isBefore(moment(events[i].created_at))){
+							lastEvent = events[i].created_at;
+						}
+						if (i == 0) {
+							streak++;
+							continue;
+						}
+
+						let momentPrev = moment(events[i-1].created_at);
+						let momentCurr = moment(events[i].created_at);
+						momentPrev = moment(momentPrev.format('YYYY-MM-DD'));
+						momentCurr = moment(momentCurr.format('YYYY-MM-DD'));
+						let diff = momentCurr.diff(momentPrev,'days');
+						
+						if (diff == 1)
+							streak++;
+						else
+							streak = 0;
+						
+						if (maxStreak <= streak)
+							maxStreak = streak;
+					}
+					resolve(temp_actorModel.insertTempStreak(actor.id, actor.login, actor.avatar_url, maxStreak, lastEvent));
+				});
+		});
+	}
+
+	const p = temp_actorModel.createTemp()
+		.then(() => actorModel.all())
+		.then( actors => Promise.all(actors.map(calcStreak)))
+		.then(() => temp_actorModel.getAllStreaks())
+		.then(streaks => {
+            let sanitized = [];
+            streaks.forEach(streak => sanitized.push({
+                id : streak.id,
+                login : streak.login,
+                avatar_url : streak.avatar_url
+            }));
+            return sanitized;
+		});		
+	
+	return p;
 };
 
 

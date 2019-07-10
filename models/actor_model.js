@@ -4,14 +4,25 @@ class ActorModel{
     }
 
     createTable(){
-        const sql = `
+        return this.dao.run(`
             CREATE TABLE IF NOT EXISTS actors (
                 id INTEGER UNIQUE,
                 login TEXT,
                 avatar_url TEXT
             )
-        `
-        return this.dao.run(sql);
+        `);
+    }
+
+    createTemp() {
+        return this.dao.run(`
+            CREATE TABLE IF NOT EXISTS temp_actors (
+                id INTEGER UNIQUE,
+                login TEXT,
+                avatar_url TEXT,
+                max_streak INTEGER,
+                last_event date
+            )
+        `);
     }
 
     insert(id, login, avatar_url){
@@ -33,7 +44,25 @@ class ActorModel{
         )
     }
 
-    getAllActors(){
+    insertTempStreak(id, login, avatar_url, max_streak, last_event) {        
+        return this.dao.run(
+            `INSERT INTO temp_actors(id, login, avatar_url, max_streak, last_event) 
+                VALUES(?,?,?,?,?)`,
+            [id, login, avatar_url, max_streak, last_event]);
+    }
+
+    getAllStreaks() {
+        return this.dao.all(`
+            SELECT * FROM temp_actors
+            ORDER BY max_streak DESC, last_event DESC, login ASC
+        `);
+    }
+
+    all(){
+        return this.dao.all(`SELECT * FROM actors`)
+    }
+
+    allOrderedByEvents(){
         return this.dao.all(
             `SELECT A.* FROM actors A INNER JOIN events E ON A.id = E.actor_id
                 GROUP BY E.actor_id ORDER BY COUNT(E.actor_id) DESC, E.created_at DESC, A.login ASC`

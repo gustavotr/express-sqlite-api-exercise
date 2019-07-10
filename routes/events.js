@@ -24,7 +24,8 @@ router.post('/', function(req, res){
   const event = req.body;
   cEvents.addEvent(event).then( () => {    
     res.status(201).end()    
-  }).catch( ()=> {
+  }).catch( (err)=> {
+    console.log("Error on event post: ", err);
     res.status(400).end()
   })
 })

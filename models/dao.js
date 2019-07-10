@@ -4,8 +4,10 @@ const path = require('path')
 
 class AppDAO {  
     
-    constructor() {
-      const dbFilePath = path.join(__dirname, "..", "database.sqlite3")
+    constructor(dbFilePath) {
+      if(!dbFilePath){
+        dbFilePath = path.join(__dirname, "..", "database.sqlite3");
+      }
       this.db = new sqlite3.Database(dbFilePath, (err) => {
         if (err) {
           console.log('Could not connect to database', err)

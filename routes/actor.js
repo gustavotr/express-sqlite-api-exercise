@@ -7,7 +7,6 @@ router.put('/', function(req, res) {
     var actor = req.body
     cActors.updateActor(actor)
         .then( code => {
-            console.log(code)
             res.status(code).end()
         })
 })
@@ -20,8 +19,7 @@ router.get('/', function(req, res){
 })
 
 router.get('/streak', function(req, res){
-    cActors.getStreak().then( data => {  
-        console.log("Streak length:", data.length)              
+    cActors.getStreak().then( data => {               
         res.json(data)
     })
 })
