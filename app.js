@@ -9,12 +9,29 @@ var index = require('./routes/index');
 var eraseEvents = require('./routes/eraseEvents');
 var events = require('./routes/events');
 var actor = require('./routes/actor');
+var fs = require('fs');
 
 var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
+
+fs.unlink('./database.sqlite3', (err) => {
+    const EventModel = require('./models/event_model');
+    const ActorModel = require('./models/actor_model');
+    const RepoModel = require('./models/repo_model');
+    const AppDAO = require('./models/dao');
+
+    const dao = new AppDAO();
+    const eventsRepo = new EventModel(dao);
+    const actorsRepo = new ActorModel(dao);
+    const repoModel = new RepoModel(dao);
+
+    eventsRepo.createTable()
+      .then(() => actorsRepo.createTable())
+      .then(() => repoModel.createTable());  
+});
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -28,23 +45,6 @@ app.use('/', index);
 app.use('/erase', eraseEvents);
 app.use('/events', events);
 app.use('/actors', actor);
-
-app.use(function(req, res, next){
-  var EventModel = require('./model/event_model')
-  var ActorModel = require('./model/actor_model')
-  var RepoModel = require('./model/repo_model')
-  var AppDAO = require('./model/dao')
-
-  var dao = new AppDAO()
-  var eventsRepo = new EventModel(dao)
-  var actorsRepo = new ActorModel(dao)
-  var repoModel = new RepoModel(dao)
-
-  eventsRepo.createTable()  
-  actorsRepo.createTable()  
-  repoModel.createTable()
-  next()
-})
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

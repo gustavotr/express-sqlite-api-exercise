@@ -1,70 +1,81 @@
-var actorRepo = require('./models').actorRepo
+const ActorModel = require('../models/actor_model');
+const DAO = require('../models/dao');
 
-var getAllActors = () => {
-	return actorRepo().getAllActors()
+var getAllActorsOrderedByEvents = () => {
+	const dao = new DAO();
+	const actorModel = new ActorModel(dao);
+	return actorModel.getAllActors()
 };
 
 var getById = (id) => {
-	return actorRepo().getById(id)
+	const dao = new DAO();
+	const actorModel = new ActorModel(dao);
+	return actorModel.getById(id)
 }
 
-var updateActor = (body) => {
-	return actorRepo().getById(body.id).then( data => {
-		var code = 200
-		if( data.length == 0){
-			code = 404
-		}else if(data.login != body.login){
-			code = 400
-		}else{
-			actorRepo().updateAvatarUrl(body.id, body.avatar_url)
-		}
-		return code
-	})
-
+var updateActor = (actor) => {	
+	const dao = new DAO();
+	const actorModel = new ActorModel(dao);
+	var p = actorModel.getById(actor.id)
+		.then( row => {			
+			if( !row ){
+				throw 404
+			}else if(row.login != actor.login){
+				throw 400
+			}
+			return null;
+		})
+		.then( () => actorModel.updateAvatarUrl(actor.id, actor.avatar_url) )
+		.then( () => 200)
+		.catch( err => err);
+	
+	return p;
 };
 
 var getStreak = () => {
+	const dao = new DAO();
+	const actorModel = new ActorModel(dao);
 	var promise = new Promise( (resolve) => {
-		actorRepo().getEventsForStreak()
-		.then((data)=>{
-			var actors = []
-			var counter = 1;
-			var e = data[0];
-			for(var i = 1; i < data.length; i++){
-				var event = data[i];
-				if(event.actor_id == e.actor_id){
-					var eventDate = new Date(event.created_at);
-					eventDate.setHours(0,0,0,0);
-					var dateBefore = new Date(e.created_at);
-					dateBefore.setHours(0,0,0,0);
-					if(eventDate - dateBefore > 1){
-						console.log("Streak break: ", eventDate - dateBefore)
-					}					
-					counter++;
-				}else{
-					actors.push({actor_id: e.actor_id, streak: counter});
-					e = event;
-					counter = 1;
+		actorModel.getEventsForStreak()
+			.then((data)=>{
+				var actors = []
+				var counter = 1;
+				var e = data[0];
+				for(var i = 1; i < data.length; i++){
+					var event = data[i];
+					if(event.actor_id == e.actor_id){
+						var eventDate = new Date(event.created_at);
+						eventDate.setHours(0,0,0,0);
+						var dateBefore = new Date(e.created_at);
+						dateBefore.setHours(0,0,0,0);
+						if(eventDate - dateBefore > 1){
+							console.log("Streak break: ", eventDate - dateBefore)
+						}					
+						counter++;
+					}else{
+						actors.push({actor_id: e.actor_id, streak: counter});
+						e = event;
+						counter = 1;
+					}
 				}
-			}
-			return actors;
-		})
-		.then( (actors)=>{
-			// console.log("Actors: ", actors)
-			resolve(actors)
-		})	
+				return actors;
+			})
+			.then( (actors)=>{
+				// console.log("Actors: ", actors)
+				resolve(actors)
+			})	
 	});
 
 	// return promise;
-	return actorRepo().getStreak();
+	return actorModel.getStreak();
 };
 
 
 module.exports = {
-	updateActor: updateActor,
-	getAllActors: getAllActors,
-	getStreak: getStreak,
-	getById: getById
+	updateActor,
+	getAllActorsOrderedByEvents,
+	getStreak,
+	getById
 };
 
 

@@ -1,36 +1,90 @@
-var eventsRepo = require('./models').eventsRepo
-var actorRepo = require('./models').actorRepo
-var repoRepo = require('./models').repoRepo
+const EventModel = require('../models/event_model');
+const ActorModel = require('../models/actor_model');
+const RepoModel = require('../models/repo_model');
+const DAO = require('../models/dao');
 
-var getAllEvents = () => {	
-	return eventsRepo().getAll()
+const getAllEvents = () => {
+	const dao = new DAO();
+	const eventModel = new EventModel(dao);
+	const p = eventModel.getAll()
+		.then( events => {
+			let evts = [];
+			events.forEach( e => {
+				evts.push(parseEventObj(e));
+			});
+			return evts;
+		});
+	return p;
 };
 
-var addEvent = (body) => {	
-	return eventsRepo().create(body.id, body.type, body.actor.id, body.repo.id, body.created_at).then( data => {
-		actorRepo().create(body.actor.id, body.actor.login, body.actor.avatar_url).catch( () => {})
-		repoRepo().create(body.repo.id, body.repo.name, body.repo.url).catch( () => {})
-	})
+const getEventsWithActorID = (id) => {	
+	const dao = new DAO();
+	const eventModel = new EventModel(dao);
+	const actorModel = new ActorModel(dao);
+	const p = actorModel.getById(id)
+				.then(row => {
+					if(!row){
+						throw 404
+					};									
+				})
+				.then(() => eventModel.getAllByActorId(id))
+				.then(rows => {
+					let evts = [];
+					rows.forEach( e => {
+						evts.push(parseEventObj(e));
+					});
+					return evts;
+				})
+	return p;
+}
+
+const addEvent = (event) => {	
+	const dao = new DAO();
+	const eventModel = new EventModel(dao);	
+	const actorModel = new ActorModel(dao);
+	const repoModel = new RepoModel(dao);
+	const p = eventModel.insert(event.id, event.type, event.actor.id, event.repo.id, event.created_at)
+		.then(() => actorModel.insert(event.actor.id, event.actor.login, event.actor.avatar_url))
+		.then(() => repoModel.insert(event.repo.id, event.repo.name, event.repo.url))	
+	return p;									
 };
 
-
-var getByActor = (id) => {
-	return eventsRepo().getById(id)	
+const eraseEvents = () => {
+	const dao = new DAO();
+	const eventModel = new EventModel(dao);	
+	const actorModel = new ActorModel(dao);
+	const repoModel = new RepoModel(dao);
+	const p = eventModel.deleteAll()
+		.then( ()=>{
+			actorModel.deleteAll()
+			repoModel.deleteAll()
+		});
+	return p;
 };
 
+const parseEventObj = (e) => {
+	return {
+		id : e.id,
+		type : e.type,
+		actor : {
+			id : e.actor_id,
+			login : e.login,
+			avatar_url : e.avatar_url
+		},
+		repo : {
+			id : e.repo_id,
+			name : e.name,
+			url : e.url
+		},
+		created_at : e.created_at
+	}
+}
 
-var eraseEvents = () => {
-	return eventsRepo().deleteAll().then( ()=>{
-		actorRepo().deleteAll()
-		repoRepo().deleteAll()
-	})
-};
-
-module.exports = {
-	getAllEvents: getAllEvents,
-	addEvent: addEvent,
-	getByActor: getByActor,
-	eraseEvents: eraseEvents
+module.exports = {	
+	getAllEvents,
+	addEvent,	
+	eraseEvents,
+	getEventsWithActorID
 };
 
 

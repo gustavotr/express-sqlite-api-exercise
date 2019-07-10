@@ -4,16 +4,19 @@ var cActors = require('../controllers/actors')
 
 // Routes related to actor.
 router.put('/', function(req, res) { 
-    var body = req.body
-    cActors.updateActor(body).then( data => {
-        res.status(data).end()
-    })
+    var actor = req.body
+    cActors.updateActor(actor)
+        .then( code => {
+            console.log(code)
+            res.status(code).end()
+        })
 })
 
 router.get('/', function(req, res){    
-    cActors.getAllActors().then( data => {        
-        res.json(data)
-    })
+    cActors.getAllActorsOrderedByEvents()
+        .then( data => {        
+            res.json(data)
+        })
 })
 
 router.get('/streak', function(req, res){

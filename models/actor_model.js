@@ -6,7 +6,7 @@ class ActorModel{
     createTable(){
         const sql = `
             CREATE TABLE IF NOT EXISTS actors (
-                id INTEGER PRIMARY KEY NOT NULL,
+                id INTEGER UNIQUE,
                 login TEXT,
                 avatar_url TEXT
             )
@@ -14,7 +14,7 @@ class ActorModel{
         return this.dao.run(sql);
     }
 
-    create(id, login, avatar_url){
+    insert(id, login, avatar_url){
         return this.dao.run(
             `INSERT INTO actors (id, login, avatar_url)
                 VALUES (?, ?, ?)`,
@@ -23,9 +23,7 @@ class ActorModel{
     }
 
     deleteAll(){
-        return this.dao.run(
-            `DELETE FROM actors WHERE 1`
-        )
+        return this.dao.run(`DELETE FROM actors`)
     }
 
     getById(id) {
@@ -45,7 +43,7 @@ class ActorModel{
     updateAvatarUrl(id, avatar_url){
         return this.dao.run(
             `UPDATE actors SET avatar_url = ? WHERE id = ?`,
-            [id, avatar_url]
+            [avatar_url, id]
         )
     }
 
