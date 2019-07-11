@@ -16,18 +16,17 @@ router.get('/actors/:actorID', function(req, res, next) {
   cEvents.getEventsWithActorID(actorID)
     .then(events =>{ 
       res.json(events) 
-    });
+    })
+    .catch( () => res.status(404).end() );
 });
 
 
 router.post('/', function(req, res){
   const event = req.body;
-  cEvents.addEvent(event).then( () => {    
-    res.status(201).end()    
-  }).catch( (err)=> {
-    console.log("Error on event post: ", err);
-    res.status(400).end()
-  })
+  cEvents.addEvent(event)
+    .then( () => {    
+      res.status(201).end()    
+    }).catch( ()=> res.status(400).end() );
 })
 
 module.exports = router;

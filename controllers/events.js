@@ -44,15 +44,14 @@ const addEvent = (event) => {
 	const actorModel = new ActorModel(dao);
 	const repoModel = new RepoModel(dao);
 
-	const p = eventModel.insert(event.id, event.type, event.actor.id, event.repo.id, event.created_at)		
-		.catch( (err)=> {
-			p.cancel();
-			return err;
-		})
-		.then(() => actorModel.insert(event.actor.id, event.actor.login, event.actor.avatar_url))
-		.catch(console.log)
-		.then(() => repoModel.insert(event.repo.id, event.repo.name, event.repo.url))	
-		.catch(console.log);
+	const p = eventModel.insert(event.id, event.type, event.actor.id, event.repo.id, event.created_at)				
+		.then(() => {			
+			actorModel.insert(event.actor.id, event.actor.login, event.actor.avatar_url)
+				.catch(console.log)
+				.then(() => repoModel.insert(event.repo.id, event.repo.name, event.repo.url))	
+				.catch(console.log);
+		});
+
 	return p;									
 };
 
